@@ -65,7 +65,7 @@ init(
 )
 
 # STEP 2: Experiment configuratios
-if test == True:
+if test:
     MAX_STEPS = 2 * batch_size
     exp_name = exp_label + env_label + "_test_" + date + algo
 else:
@@ -209,15 +209,13 @@ sac_config = {
 }
 
 if algo == "PPO":
-    training_config = {**common_config, **ppo_config}
+    training_config = common_config | ppo_config
 elif algo == "SAC":
-    training_config = {**common_config, **sac_config}
+    training_config = common_config | sac_config
 else:
     training_config = common_config
 
 
-# STEP 3: run experiment
-checkpoints = []
 analysis = tune.run(
     algo,
     name=exp_name,
@@ -232,9 +230,7 @@ analysis = tune.run(
 )
 
 best_checkpoint = analysis.best_checkpoint
-checkpoints.append(best_checkpoint)
-
-
+checkpoints = [best_checkpoint]
 # Planner 2:
 # env_config["n_hh"] = 2
 # env_config_eval["n_hh"] = 2

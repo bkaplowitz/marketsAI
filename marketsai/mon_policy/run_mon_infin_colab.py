@@ -66,23 +66,19 @@ if TEST:
         OUTPUT_PATH_FIGURES = "/scratch/mc5851/Figures/ALL/"
         OUTPUT_PATH_RESULTS = "/scratch/mc5851/ray_results/ALL/"
 
+elif NATIVE:
+    OUTPUT_PATH_EXPERS = "/Users/matiascovarrubias/Dropbox/RL_macro/Experiments/"
+    OUTPUT_PATH_FIGURES = (
+        "/Users/matiascovarrubias/Dropbox/RL_macro/Documents/Figures/"
+    )
+    OUTPUT_PATH_RESULTS = "~/ray_results"
 else:
-    if NATIVE:
-        OUTPUT_PATH_EXPERS = "/Users/matiascovarrubias/Dropbox/RL_macro/Experiments/"
-        OUTPUT_PATH_FIGURES = (
-            "/Users/matiascovarrubias/Dropbox/RL_macro/Documents/Figures/"
-        )
-        OUTPUT_PATH_RESULTS = "~/ray_results"
-    else:
-        OUTPUT_PATH_EXPERS = "/scratch/mc5851/Experiments/"
-        OUTPUT_PATH_FIGURES = "/scratch/mc5851/Figures/"
-        OUTPUT_PATH_RESULTS = "/scratch/mc5851/ray_results/"
+    OUTPUT_PATH_EXPERS = "/scratch/mc5851/Experiments/"
+    OUTPUT_PATH_FIGURES = "/scratch/mc5851/Figures/"
+    OUTPUT_PATH_RESULTS = "/scratch/mc5851/ray_results/"
 
 ALGO = "PPO"  # either PPO" or "SAC"
-if NATIVE:
-    device = "native_"  # either "native" or "server"
-else:
-    device = "server_"
+device = "native_" if NATIVE else "server_"
 n_firms_LIST = [2]  # list with number of agents for each run
 n_inds_LIST = [200]
 ITERS_TEST = 5  # number of iteration for test
@@ -123,21 +119,16 @@ BATCH_SIZE = NUM_ROLLOUT * (max(N_WORKERS, 1)) * NUM_ENV_PW * BATCH_ROLLOUT
 print("number of workers:", N_WORKERS, "batch size:", BATCH_SIZE)
 
 # define length of experiment (MAX_STEPS) and experiment name
-if TEST == True:
-    MAX_STEPS = ITERS_TEST * BATCH_SIZE
-else:
-    MAX_STEPS = ITERS_RUN * BATCH_SIZE
-
+MAX_STEPS = ITERS_TEST * BATCH_SIZE if TEST else ITERS_RUN * BATCH_SIZE
 # checkpointing, evaluation during trainging and stopage
 CHKPT_FREQ = 1000
 if TEST:
     EVAL_INTERVAL = 5
-    EVAL_EPISODES = 1
     SIMUL_EPISODES = 1
 else:
     EVAL_INTERVAL = 5000
-    EVAL_EPISODES = 1
     SIMUL_EPISODES = 100
+EVAL_EPISODES = 1
 STOP = {"timesteps_total": MAX_STEPS}
 
 # Initialize ray

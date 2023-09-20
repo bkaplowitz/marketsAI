@@ -107,7 +107,7 @@ class MonPolicyFinite(MultiAgentEnv):
                 )
                 for i in range(self.n_agents)
             }
-        elif self.obs_flex_index and not self.regime_change:
+        elif self.obs_flex_index:
             self.observation_space = {
                 i: Dict(
                     {
@@ -130,7 +130,7 @@ class MonPolicyFinite(MultiAgentEnv):
                 for i in range(self.n_agents)
             }
 
-        elif not self.obs_flex_index and self.regime_change:
+        elif self.regime_change:
             self.observation_space = {
                 i: Dict(
                     {

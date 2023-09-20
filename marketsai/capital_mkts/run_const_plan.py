@@ -74,11 +74,7 @@ BATCH_SIZE = NUM_ROLLOUT * (max(N_WORKERS, 1)) * NUM_ENV_PW * BATCH_ROLLOUT
 print(N_WORKERS, BATCH_SIZE)
 
 # define length of experiment (MAX_STEPS) and experiment name
-if TEST == True:
-    MAX_STEPS = ITERS_TEST * BATCH_SIZE
-else:
-    MAX_STEPS = ITERS_RUN * BATCH_SIZE
-
+MAX_STEPS = ITERS_TEST * BATCH_SIZE if TEST else ITERS_RUN * BATCH_SIZE
 CHKPT_FREQ = 2
 
 stop = {"timesteps_total": MAX_STEPS}
@@ -152,6 +148,7 @@ class MyCallbacks(DefaultCallbacks):
 
 
 """ STEP 3: Environment and Algorithm configuration """
+
 
 
 # environment config including evaluation environment (without exploration)
@@ -245,9 +242,9 @@ sac_config = {
 }
 
 if ALGO == "PPO":
-    training_config = {**common_config, **ppo_config}
+    training_config = common_config | ppo_config
 elif ALGO == "SAC":
-    training_config = {**common_config, **sac_config}
+    training_config = common_config | sac_config
 else:
     training_config = common_config
 
@@ -327,7 +324,7 @@ for n_hh in N_HH_LIST:
 
 # global experiment name
 if len(exp_names) > 1:
-    EXP_LABEL = DEVICE + f"_multi_hh_"
+    EXP_LABEL = DEVICE + "_multi_hh_"
     if TEST == True:
         EXP_NAME = EXP_LABEL + ENV_LABEL + "_test_" + DATE + ALGO
     else:

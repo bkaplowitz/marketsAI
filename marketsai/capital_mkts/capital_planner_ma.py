@@ -109,13 +109,9 @@ class Capital_planner_ma(MultiAgentEnv):
                     if (t // (1 / self.shock_agg_transition[0][1]) + 1) % 2 == 0
                     else 0
                 )
-            self.shocks_analysis_idtc = {0: [0 for i in range(self.n_hh)]}
+            self.shocks_analysis_idtc = {0: [0 for _ in range(self.n_hh)]}
             for t in range(1, self.horizon + 1):
-                self.shocks_analysis_idtc[t] = (
-                    [0 for i in range(self.n_hh)]
-                    if (t // (1 / self.shock_idtc_transition[0][1]) + 1) % 2 == 0
-                    else [0 for i in range(self.n_hh)]
-                )
+                self.shocks_analysis_idtc[t] = [0 for _ in range(self.n_hh)]
 
         # CREATE SPACES
 
@@ -142,7 +138,7 @@ class Capital_planner_ma(MultiAgentEnv):
                     MultiDiscrete(
                         [
                             len(self.shock_idtc_values)
-                            for i in range(self.n_obs_shock_idtc)
+                            for _ in range(self.n_obs_shock_idtc)
                         ]
                     ),
                     Discrete(len(self.shock_agg_values)),
@@ -233,7 +229,7 @@ class Capital_planner_ma(MultiAgentEnv):
         }
         return self.obs_
 
-    def step(self, action_dict):  # INPUT: Action Dictionary
+    def step(self, action_dict):    # INPUT: Action Dictionary
         """
         STEP FUNCTION
         0. update recursive structure (e.g. k=k_next)
@@ -270,7 +266,7 @@ class Capital_planner_ma(MultiAgentEnv):
         ]
 
         # coorect if bgt constraint is violated
-        bgt_penalty_ind = [0 for i in range(self.n_hh)]  # only for info
+        bgt_penalty_ind = [0 for _ in range(self.n_hh)]
         for i in range(self.n_hh):
             if np.sum(s_ij[i]) > 1:
                 s_ij[i] = [s_ij[i][j] / np.sum(s_ij[i]) for j in range(self.n_capital)]
@@ -281,7 +277,7 @@ class Capital_planner_ma(MultiAgentEnv):
             list(k[i * self.n_capital : i * self.n_capital + self.n_capital])
             for i in range(self.n_hh)
         ]
-        k_bundle_i = [1 for i in range(self.n_hh)]
+        k_bundle_i = [1 for _ in range(self.n_hh)]
         for i in range(self.n_hh):
             for j in range(self.n_capital):
                 k_bundle_i[i] *= k_ij[i][j] ** (1 / self.n_capital)
@@ -352,9 +348,9 @@ class Capital_planner_ma(MultiAgentEnv):
             )[0]
 
         # reorganize state so each hh sees his state first
-        k_ij_new_perfirm = [[] for i in range(self.n_hh)]
-        k_new_perfirm = [[] for i in range(self.n_hh)]
-        shocks_idtc_id_new_perfirm = [[] for i in range(self.n_hh)]
+        k_ij_new_perfirm = [[] for _ in range(self.n_hh)]
+        k_new_perfirm = [[] for _ in range(self.n_hh)]
+        shocks_idtc_id_new_perfirm = [[] for _ in range(self.n_hh)]
         # put your own state first
 
         for i in range(self.n_hh):
@@ -417,7 +413,7 @@ class Capital_planner_ma(MultiAgentEnv):
                 for i in range(1, self.n_hh)
             }
 
-            info = {**info_global, **info_ind}
+            info = info_global | info_ind
 
         # RETURN
 

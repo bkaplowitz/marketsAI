@@ -102,7 +102,7 @@ def decode(code, dims):
     """
     dims_total = np.product(dims)
     assert code < dims_total
-    array = [0 for i in range(len(dims))]
+    array = [0 for _ in range(len(dims))]
 
     array[-1] = code % dims[-1]
     array[0] = code // np.product(dims[1:])
@@ -134,9 +134,7 @@ class AR:
 
     def evaluate(self, input):
 
-        evaluate = self.coeffs[0] * input + np.random.normal(scale=self.coeffs[1])
-
-        return evaluate
+        return self.coeffs[0] * input + np.random.normal(scale=self.coeffs[1])
 
 
 class AR_beta_meanrev:
@@ -146,7 +144,7 @@ class AR_beta_meanrev:
 
     def evaluate(self, input):
 
-        evaluate = min(
+        return min(
             (
                 self.coeffs[0] * (self.coeffs[1] - input)
                 - 0.1
@@ -154,8 +152,6 @@ class AR_beta_meanrev:
             ),
             0,
         )
-
-        return evaluate
 
 
 # improve evaluate(), I would change name to update.

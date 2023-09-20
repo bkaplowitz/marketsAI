@@ -107,6 +107,7 @@ def process_rewards(r, BETA):
 
 """ Step 1: Plot progress during learning run """
 
+
 if PLOT_PROGRESS == True:
     # Big plot
 
@@ -342,7 +343,7 @@ shutdown()
 """ Plot IRs """
 
 for trial in [0, 1, 2, 3]:
-    x = [i for i in range(12)]
+    x = list(range(12))
     IRs = simul_results_dict["IRs"][trial]
     plt.plot(x, IRs)
     # learning_plot = learning_plot.get_figure()

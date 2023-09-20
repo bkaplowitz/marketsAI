@@ -32,15 +32,15 @@ class DiffDemand_simple(MultiAgentEnv):
         for (key, value) in self.agents_dict.items():
             self.action_space[key] = Discrete(self.gridpoints)
             self.observation_space[key] = MultiDiscrete(
-                [self.gridpoints for i in range(self.n_agents)]
+                [self.gridpoints for _ in range(self.n_agents)]
             )
 
         # Paraterers of the markets
         self.parameters = mkt_config.get(
             "parameters",
             {
-                "cost": [1 for i in range(self.n_agents)],
-                "values": [2 for i in range(self.n_agents)],
+                "cost": [1 for _ in range(self.n_agents)],
+                "values": [2 for _ in range(self.n_agents)],
                 "ext_demand": 0,
                 "substitution": 0.25,
             },

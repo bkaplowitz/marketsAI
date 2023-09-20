@@ -82,11 +82,7 @@ class GM(gym.Env):
 
         # DONE FLAGS
         self.timestep += 1
-        if self.timestep < self.horizon:
-            done = False
-        else:
-            done = True
-
+        done = self.timestep >= self.horizon
         # ADDITIONAL INFO
         info = {
             "savings_rate": s,

@@ -71,8 +71,8 @@ class DiffDemand(MultiAgentEnv):
         self.parameters = self.mkt_config.get(
             "parameters",
             {
-                "cost": [1 for i in range(self.n_agents)],
-                "values": [2 for i in range(self.n_agents)],
+                "cost": [1 for _ in range(self.n_agents)],
+                "values": [2 for _ in range(self.n_agents)],
                 "ext_demand": 0,
                 "substitution": 0.25,
             },
@@ -90,12 +90,12 @@ class DiffDemand(MultiAgentEnv):
         if isinstance(lower_price_provided, list):
             self.lower_price = lower_price_provided
         else:
-            self.lower_price = [lower_price_provided for i in range(self.n_agents)]
+            self.lower_price = [lower_price_provided for _ in range(self.n_agents)]
 
         if isinstance(higher_price_provided, list):
             self.higher_price = higher_price_provided
         else:
-            self.higher_price = [higher_price_provided for i in range(self.n_agents)]
+            self.higher_price = [higher_price_provided for _ in range(self.n_agents)]
 
         # spaces
         self.space_type = self.mkt_config.get("space_type", "Discrete")
@@ -113,7 +113,8 @@ class DiffDemand(MultiAgentEnv):
                 self.action_space[f"agent_{i}"] = Discrete(self.gridpoints)
                 self.observation_space[f"agent_{i}"] = MultiDiscrete(
                     np.array(
-                        [self.gridpoints for i in range(self.n_agents)], dtype=np.int64
+                        [self.gridpoints for _ in range(self.n_agents)],
+                        dtype=np.int64,
                     )
                 )
 
@@ -127,7 +128,7 @@ class DiffDemand(MultiAgentEnv):
                 self.observation_space[f"agent_{i}"] = Box(
                     low=np.float32(np.array(self.lower_price)),
                     high=np.float32(np.array(self.higher_price)),
-                    shape=(int(self.n_agents),),
+                    shape=(self.n_agents,),
                     dtype=np.float32,
                 )
 
@@ -144,10 +145,10 @@ class DiffDemand(MultiAgentEnv):
 
     def reset(self):
 
-        if self.space_type == "MultiDiscrete" or self.space_type == "Discrete":
+        if self.space_type in ["MultiDiscrete", "Discrete"]:
             self.obs = {
                 f"agent_{i}": np.array(
-                    [np.floor(self.gridpoints / 2) for i in range(self.n_agents)],
+                    [np.floor(self.gridpoints / 2) for _ in range(self.n_agents)],
                     dtype=np.int64,
                 )
                 for i in range(self.n_agents)
@@ -158,7 +159,7 @@ class DiffDemand(MultiAgentEnv):
             self.obs = {
                 f"agent_{i}": encode(
                     array=self.obs[f"agent_{i}"],
-                    dims=[self.gridpoints for i in range(self.n_agents)],
+                    dims=[self.gridpoints for _ in range(self.n_agents)],
                 )
                 for i in range(self.n_agents)
             }
@@ -183,7 +184,7 @@ class DiffDemand(MultiAgentEnv):
 
         actions = list(action_dict.values())
 
-        if self.space_type == "Discrete" or self.space_type == "MultiDiscrete":
+        if self.space_type in ["Discrete", "MultiDiscrete"]:
             self.obs_ = {
                 f"agent_{i}": np.array([], dtype=np.int64) for i in range(self.n_agents)
             }
@@ -200,15 +201,15 @@ class DiffDemand(MultiAgentEnv):
                 for i in range(self.n_agents)
             ]
 
-            if self.space_type == "Discrete":
+        if self.space_type == "Discrete":
 
-                self.obs_ = {
-                    f"agent_{i}": encode(
-                        array=self.obs_[f"agent_{i}"],
-                        dims=[self.gridpoints for i in range(self.n_agents)],
-                    )
-                    for i in range(self.n_agents)
-                }
+            self.obs_ = {
+                f"agent_{i}": encode(
+                    array=self.obs_[f"agent_{i}"],
+                    dims=[self.gridpoints for _ in range(self.n_agents)],
+                )
+                for i in range(self.n_agents)
+            }
 
         if self.space_type == "Continuous":
             self.obs_ = {

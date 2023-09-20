@@ -80,7 +80,7 @@ class KrusellSmith(MultiAgentEnv):
             rng = np.random.default_rng(self.seed_analysis)
         self.shocks_agg_seeded = {t: rng.normal() for t in range(self.horizon + 1)}
         self.shocks_idtc_seeded = {
-            t: [rng.normal() for i in range(self.N_firms)]
+            t: [rng.normal() for _ in range(self.N_firms)]
             for t in range(self.horizon + 1)
         }
 
@@ -113,7 +113,7 @@ class KrusellSmith(MultiAgentEnv):
 
         self.timestep = 0
 
-        if self.eval_mode == True:
+        if self.eval_mode == True or self.analysis_mode == True:
             k_init = np.array(
                 [
                     self.k_ss * 0.9 if i % 2 == 0 else self.k_ss * 0.8
@@ -122,16 +122,6 @@ class KrusellSmith(MultiAgentEnv):
                 dtype=float,
             )
 
-        elif self.analysis_mode == True:
-            k_init = np.array(
-                [
-                    self.k_ss * 0.9 if i % 2 == 0 else self.k_ss * 0.8
-                    for i in range(self.N_firms * 1)
-                ],
-                dtype=float,
-            )
-
-        # DEFAULT: when learning, we randomize the initial observations
         else:
             k_init = np.array(
                 [
@@ -163,7 +153,7 @@ class KrusellSmith(MultiAgentEnv):
         }
         return self.obs_
 
-    def step(self, action_dict):  # INPUT: Action Dictionary
+    def step(self, action_dict):    # INPUT: Action Dictionary
         """
         STEP FUNCTION
         0. update recursive structure (e.g. k=k_next)
@@ -215,9 +205,9 @@ class KrusellSmith(MultiAgentEnv):
         ]
 
         inv_exp_i = [
-            [s[i] * income_i[i] for j in range(self.n_capital)]
+            [s[i] * income_i[i] for _ in range(self.n_capital)]
             for i in range(self.n_hh)
-        ]  # in utility, if bgt constraint is violated, c[i]=0, so penalty
+        ]
 
         inv_exp_tot = np.sum([inv_exp_i[i] for i in range(self.n_hh)])
 
@@ -256,8 +246,8 @@ class KrusellSmith(MultiAgentEnv):
             )[0]
 
         # reorganize state so each hh sees his state first
-        k_new_perfirm = [[] for i in range(self.n_hh)]
-        shocks_idtc_id_new_perfirm = [[] for i in range(self.n_hh)]
+        k_new_perfirm = [[] for _ in range(self.n_hh)]
+        shocks_idtc_id_new_perfirm = [[] for _ in range(self.n_hh)]
         # put your own state first
 
         for i in range(self.n_hh):
@@ -313,7 +303,7 @@ class KrusellSmith(MultiAgentEnv):
                 for i in range(1, self.n_hh)
             }
 
-            info = {**info_global, **info_ind}
+            info = info_global | info_ind
 
         # RETURN
 

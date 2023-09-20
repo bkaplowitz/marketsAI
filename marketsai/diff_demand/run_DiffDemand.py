@@ -37,12 +37,12 @@ policy_ids = [f"policy_{i}" for i in range(env.n_agents)]
 test = False
 date = "May24_"
 env_label = "DiffDd"
-if test == True:
+if test:
     MAX_STEPS = 10 * 1000
-    exp_label = env_label + "_test_" + date
+    exp_label = f"{env_label}_test_{date}"
 else:
     MAX_STEPS = 3000 * 1000
-    exp_label = env_label + "_run_" + date
+    exp_label = f"{env_label}_run_{date}"
 
 verbosity = 3
 # stop = {"episodes_total": MAX_STEPS // 100}
@@ -51,11 +51,9 @@ stop = {"timesteps_total": MAX_STEPS}
 # Environment configuration
 env_config = {
     "mkt_config": {
-        # "lower_price": [LOWER_PRICE for i in range(env.n_agents)],
-        # "higher_price": [HIGHER_PRICE for i in range(env.n_agents)],
         "parameteres": {
-            "cost": [1 for i in range(env.n_agents)],
-            "values": [2 for i in range(env.n_agents)],
+            "cost": [1 for _ in range(env.n_agents)],
+            "values": [2 for _ in range(env.n_agents)],
             "ext_demand": 0,
             "substitution": 0.25,
         },
@@ -94,9 +92,7 @@ exploration_config = {
 # Training config (for the algorithm)
 env = DiffDemand(env_config)
 common_config = {
-    # common_config
     "gamma": 0.95,
-    # "lr": tune.grid_search([0.00025, 0.1]),
     "lr": 0.15,
     "env": "diffdemand",
     "horizon": 100,
@@ -108,25 +104,20 @@ common_config = {
         "policies": {
             policy_ids[i]: (
                 None,
-                env.observation_space["agent_{}".format(i)],
-                env.action_space["agent_{}".format(i)],
+                env.observation_space[f"agent_{i}"],
+                env.action_space[f"agent_{i}"],
                 {},
             )
             for i in range(env.n_agents)
         },
-        "policy_mapping_fn": (lambda agent_id: policy_ids[int(agent_id.split("_")[1])]),
-        "replay_mode": "independent",  # you can change to "lockstep".
+        "policy_mapping_fn": lambda agent_id: policy_ids[
+            int(agent_id.split("_")[1])
+        ],
+        "replay_mode": "independent",
     },
     "framework": "torch",
     "num_workers": 1,
     "num_gpus": 0,
-    # "num_envs_per_worker": 10,
-    # "create_env_on_driver": True,
-    # "num_cpus_for_driver": 1,
-    # "rollout_fragment_length": 1000,
-    # "train_batch_size": 30000,
-    # "training_intensity": 1,  # the default is train_batch_size_rollout_fragment_length
-    # "timesteps_per_iteration": 1000, #I still don't know how this works. I knwow its a minimum.
     "normalize_actions": False,
     "log_level": "ERROR",
 }
@@ -157,7 +148,7 @@ dqn_config = {
 # if test == True:
 #    apex_config["learning_starts"] = 1000
 
-training_config_dqn = {**common_config, **dqn_config}
+training_config_dqn = common_config | dqn_config
 
 exp_name = exp_label + "DQNbasic"
 results = tune.run(

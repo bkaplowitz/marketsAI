@@ -123,7 +123,10 @@ class Capital_planner_sa(gym.Env):
                     shape=(self.n_obs_stock,),
                 ),
                 MultiDiscrete(
-                    [len(self.shock_idtc_values) for i in range(self.n_obs_shock_idtc)]
+                    [
+                        len(self.shock_idtc_values)
+                        for _ in range(self.n_obs_shock_idtc)
+                    ]
                 ),
                 Discrete(len(self.shock_agg_values)),
             ]
@@ -150,7 +153,7 @@ class Capital_planner_sa(gym.Env):
             k_init = np.array(
                 [
                     random.uniform(self.k_ss * 0.5, self.k_ss * 1.25)
-                    for i in range(self.n_hh * self.n_capital)
+                    for _ in range(self.n_hh * self.n_capital)
                 ],
                 dtype=float,
             )
@@ -158,7 +161,7 @@ class Capital_planner_sa(gym.Env):
             shocks_idtc_init = np.array(
                 [
                     random.choices(list(range(len(self.shock_idtc_values))))[0]
-                    for i in range(self.n_hh)
+                    for _ in range(self.n_hh)
                 ]
             )
             shock_agg_init = random.choices(list(range(len(self.shock_idtc_values))))[0]
@@ -191,7 +194,7 @@ class Capital_planner_sa(gym.Env):
         ]
 
         # coorect if bgt constraint is violated
-        bgt_penalty_ind = [0 for i in range(self.n_hh)]  # only for info
+        bgt_penalty_ind = [0 for _ in range(self.n_hh)]
         for i in range(self.n_hh):
             if np.sum(s_ij[i]) > 1:
                 s_ij[i] = [s_ij[i][j] / np.sum(s_ij[i]) for j in range(self.n_capital)]
@@ -201,7 +204,7 @@ class Capital_planner_sa(gym.Env):
             list(k[i * self.n_capital : i * self.n_capital + self.n_capital])
             for i in range(self.n_hh)
         ]
-        k_bundle_i = [1 for i in range(self.n_hh)]
+        k_bundle_i = [1 for _ in range(self.n_hh)]
         for i in range(self.n_hh):
             for j in range(self.n_capital):
                 k_bundle_i[i] *= k_ij[i][j] ** (1 / self.n_capital)
@@ -282,11 +285,7 @@ class Capital_planner_sa(gym.Env):
         rew = np.mean(utility_i)
 
         # DONE FLAGS
-        if self.timestep < self.horizon:
-            done = False
-        else:
-            done = True
-
+        done = self.timestep >= self.horizon
         # ADDITIONAL INFO
         info = {
             "savings": s_ij,

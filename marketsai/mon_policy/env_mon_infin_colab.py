@@ -93,13 +93,13 @@ class MonPolicy(MultiAgentEnv):
                 + [3 for i in range(self.n_firms)]
                 + [3, 3, 1]
             )
-        elif self.obs_idshock and not self.regime_change:
+        elif self.obs_idshock:
             n_obs_ind = self.n_firms * 2
             n_obs_agg = 2
             low = np.array([0 for i in range(2 * self.n_firms + 2)])
             high = np.array([3 for i in range(2 * self.n_firms + 2)])
 
-        elif not self.obs_idshock and self.regime_change:
+        elif self.regime_change:
             n_obs_ind = self.n_firms
             n_obs_agg = 3
             low = np.array(

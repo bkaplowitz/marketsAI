@@ -66,7 +66,7 @@ checkpoint_path = checkpoints_dirs[0]
 # checkpoint_path = "/Users/matiascovarrubias/ray_results/native_multi_capital_planner_test_July17_PPO/PPO_capital_planner_3e5e9_00000_0_2021-07-18_14-01-58/checkpoint_000050/checkpoint-50"
 
 """ Step 1: Plot progress """
-if PLOT_PROGRESS == True:
+if PLOT_PROGRESS:
     for i in range(len(exp_names)):
         data_progress_df = pd.read_csv(progress_csv_dirs[i])
         max_rewards = data_progress_df[
@@ -86,14 +86,16 @@ if PLOT_PROGRESS == True:
     plt.xlabel("Timesteps (thousands)")
     plt.xlim([0, 600])
     plt.legend(labels=[f"{i+1} households" for i in range(len(n_agents_list))])
-    learning_plot.savefig(OUTPUT_PATH_FIGURES + "progress_" + exp_names[-1] + ".png")
+    learning_plot.savefig(
+        f"{OUTPUT_PATH_FIGURES}progress_" + exp_names[-1] + ".png"
+    )
 
 """ Step 2: Congif and Restore RL policy and  then simulate """
-y_agg_list = [[] for i in n_agents_list]
-s_agg_list = [[] for i in n_agents_list]
-c_agg_list = [[] for i in n_agents_list]
-k_agg_list = [[] for i in n_agents_list]
-shock_agg_list = [[] for i in n_agents_list]
+y_agg_list = [[] for _ in n_agents_list]
+s_agg_list = [[] for _ in n_agents_list]
+c_agg_list = [[] for _ in n_agents_list]
+k_agg_list = [[] for _ in n_agents_list]
+shock_agg_list = [[] for _ in n_agents_list]
 
 
 for ind, n_hh in enumerate(n_agents_list):
@@ -221,10 +223,9 @@ for ind, n_hh in enumerate(n_agents_list):
         # to do, check encode part
         K = obs[0][0]
         shock_raw = [obs[2], obs[1][0]]
-        shock_id = encode(shock_raw, dims=[2 for i in range(n_hh)])  # change_dims
+        shock_id = encode(shock_raw, dims=[2 for _ in range(n_hh)])
         s = [policy_list[i](np.array([shock_id] + K)) for i in range(env_inst.n_hh)]
-        action = np.array([2 * s[i] / max_action - 1 for i in range(env_inst.n_hh)])
-        return action
+        return np.array([2 * s[i] / max_action - 1 for i in range(env_inst.n_hh)])
 
     shock_list_econ = [[] for i in range(env_inst.n_hh)]
     s_list_econ = [[] for i in range(env_inst.n_hh)]
@@ -283,7 +284,8 @@ for ind, n_hh in enumerate(n_agents_list):
 
 """ Step 3: Create aggregate plots"""
 
-x = [i for i in range(100)]
+
+x = list(range(100))
 plt.subplot(2, 2, 1)
 for i in range(len(n_agents_list)):
     sn.lineplot(x, shock_agg_list[i][:100], label=f"{i} household(s)", legend=0)
@@ -324,7 +326,7 @@ if SAVE_CSV == True:
         IRResults_idtc[f"y_{i}"] = y_list[i]
         IRResults_idtc[f"c_{i}"] = c_list[i]
 
-    IRResults = {**IRResults_agg, **IRResults_idtc}
+    IRResults = IRResults_agg | IRResults_idtc
     df_IR = pd.DataFrame(IRResults)
 
     # when ready for publication

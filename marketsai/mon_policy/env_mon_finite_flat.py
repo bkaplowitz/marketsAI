@@ -81,8 +81,8 @@ class MonPolicyFinite(MultiAgentEnv):
             for i in range(self.n_agents)
         }
 
+        n_obs_ind = self.n_firms
         if self.obs_flex_index and self.regime_change:
-            n_obs_ind = self.n_firms
             n_obs_agg = 5
             low = np.array(
                 [0 for i in range(n_obs_ind)] + [0 for i in range(n_obs_agg)]
@@ -91,18 +91,7 @@ class MonPolicyFinite(MultiAgentEnv):
                 [10 for i in range(self.n_firms)]
                 + [5, float("inf"), self.horizon, 1, 1]
             )
-        elif self.obs_flex_index and not self.regime_change:
-            n_obs_ind = self.n_firms
-            n_obs_agg = 4
-            low = np.array(
-                [0 for i in range(n_obs_ind)] + [0 for i in range(n_obs_agg)]
-            )
-            high = np.array(
-                [10 for i in range(self.n_firms)] + [5, float("inf"), self.horizon, 1]
-            )
-
-        elif not self.obs_flex_index and self.regime_change:
-            n_obs_ind = self.n_firms
+        elif self.obs_flex_index or self.regime_change:
             n_obs_agg = 4
             low = np.array(
                 [0 for i in range(n_obs_ind)] + [0 for i in range(n_obs_agg)]
@@ -112,7 +101,6 @@ class MonPolicyFinite(MultiAgentEnv):
             )
 
         else:
-            n_obs_ind = self.n_firms
             n_obs_agg = 3
             low = np.array(
                 [0 for i in range(n_obs_ind)] + [0 for i in range(n_obs_agg)]
@@ -147,30 +135,30 @@ class MonPolicyFinite(MultiAgentEnv):
 
         if (not self.random_eval and self.eval_mode) or self.analysis_mode:
             self.epsilon_g_seeded = [
-                rng.standard_normal() for t in range(self.horizon + 1)
+                rng.standard_normal() for _ in range(self.horizon + 1)
             ]
 
             self.epsilon_z_seeded = [
-                np.array([rng.standard_normal() for i in range(self.n_agents)])
-                for t in range(self.horizon + 1)
+                np.array([rng.standard_normal() for _ in range(self.n_agents)])
+                for _ in range(self.horizon + 1)
             ]
             self.menu_cost_seeded = [
                 np.array(
                     [
                         rng.uniform(0, self.params["menu_cost"])
-                        for i in range(self.n_agents)
+                        for _ in range(self.n_agents)
                     ]
                 )
-                for t in range(self.horizon + 1)
+                for _ in range(self.horizon + 1)
             ]
 
             self.initial_markup_seeded = np.array(
-                [rng.normal(1.3, 0.1) for i in range(self.n_agents)]
+                [rng.normal(1.3, 0.1) for _ in range(self.n_agents)]
             )
 
-            if self.analysis_mode:
-                self.epsilon_g_seeded = [0 for t in range(self.horizon + 1)]
-                self.epsilon_g_seeded[0] = self.params["sigma_g"]
+        if self.analysis_mode:
+            self.epsilon_g_seeded = [0 for _ in range(self.horizon + 1)]
+            self.epsilon_g_seeded[0] = self.params["sigma_g"]
 
         # to do:
         # last check that everything is right (stochastic supports and initial poitns for evaluation and analysis)
@@ -193,14 +181,13 @@ class MonPolicyFinite(MultiAgentEnv):
             self.epsilon_g = self.epsilon_g_seeded[0]
             self.menu_cost = self.menu_cost_seeded[0]
 
-        # DEFAULT: when learning, we randomize the initial observations
         else:
-            self.mu_ij_next = [random.uniform(1.2, 1.55) for i in range(self.n_agents)]
+            self.mu_ij_next = [random.uniform(1.2, 1.55) for _ in range(self.n_agents)]
             self.epsilon_z = np.random.standard_normal(size=self.n_agents)
             self.epsilon_g = np.random.standard_normal()
             self.menu_cost = [
                 random.uniform(0, self.params["menu_cost"])
-                for i in range(self.n_agents)
+                for _ in range(self.n_agents)
             ]
 
         if self.no_agg:
@@ -212,10 +199,10 @@ class MonPolicyFinite(MultiAgentEnv):
         ]
         self.log_g = log_g_bar + sigma_g * self.epsilon_g
         self.g = math.e ** self.log_g
-        # mu vector per industry:
-        mu_perind = []
-        for counter in range(0, self.n_agents, self.n_firms):
-            mu_perind.append(self.mu_ij_next[counter : counter + self.n_firms])
+        mu_perind = [
+            self.mu_ij_next[counter : counter + self.n_firms]
+            for counter in range(0, self.n_agents, self.n_firms)
+        ]
         # collapse to markup index:
         self.mu_j = [
             ((2 / self.n_firms) * np.sum([i ** (1 - self.params["eta"]) for i in elem]))
@@ -228,7 +215,7 @@ class MonPolicyFinite(MultiAgentEnv):
             * np.sum([(elem) ** (1 - self.params["theta"]) for elem in self.mu_j])
         ) ** (1 / (1 - self.params["theta"]))
 
-        mu_obsperfirm = [[] for i in range(self.n_agents)]
+        mu_obsperfirm = [[] for _ in range(self.n_agents)]
         for i in range(self.n_agents):
             mu_obsperfirm[i] = [self.mu_ij_next[i]] + [
                 x
@@ -252,7 +239,7 @@ class MonPolicyFinite(MultiAgentEnv):
                 )
                 for i in range(self.n_agents)
             }
-        elif self.obs_flex_index and not self.regime_change:
+        elif self.obs_flex_index:
             self.obs_next = {
                 i: np.array(
                     mu_obsperfirm[i] + [self.mu, self.g, self.timestep, flex_index],
@@ -260,7 +247,7 @@ class MonPolicyFinite(MultiAgentEnv):
                 )
                 for i in range(self.n_agents)
             }
-        elif not self.obs_flex_index and self.regime_change:
+        elif self.regime_change:
             self.obs_next = {
                 i: np.array(
                     mu_obsperfirm[i]

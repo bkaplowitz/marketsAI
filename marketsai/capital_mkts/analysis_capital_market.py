@@ -32,15 +32,12 @@ dir_policy_folder = (
 if FOR_PUBLIC:
     OUTPUT_PATH_EXPERS = "/Users/matiascovarrubias/Dropbox/RL_macro/Experiments/"
     OUTPUT_PATH_FIGURES = "/Users/matiascovarrubias/Dropbox/RL_macro/Documents/Figures/"
-    OUTPUT_PATH_TABLES = "/Users/matiascovarrubias/Dropbox/RL_macro/Documents/Tables/"
 else:
     OUTPUT_PATH_EXPERS = "/Users/matiascovarrubias/Dropbox/RL_macro/Experiments/ALL/"
     OUTPUT_PATH_FIGURES = (
         "/Users/matiascovarrubias/Dropbox/RL_macro/Documents/Figures/ALL/"
     )
-    OUTPUT_PATH_TABLES = "/Users/matiascovarrubias/Dropbox/RL_macro/Documents/Tables/"
-
-
+OUTPUT_PATH_TABLES = "/Users/matiascovarrubias/Dropbox/RL_macro/Documents/Tables/"
 # Plot options
 sn.color_palette("Set2")
 sn.set_style("ticks")  # grid styling, "dark"
@@ -371,16 +368,16 @@ exp_data_simul_econ_dict = {
 # plt.show()
 
 """ Step 4: Restore GDSGE policy """
-y_agg_list = [[] for i in n_agents_list]
-s_agg_list = [[] for i in n_agents_list]
-c_agg_list = [[] for i in n_agents_list]
-k_agg_list = [[] for i in n_agents_list]
-k_max_list = [[] for i in n_agents_list]
-k_min_list = [[] for i in n_agents_list]
-s_max_list = [[] for i in n_agents_list]
-s_min_list = [[] for i in n_agents_list]
-shock_agg_list = [[] for i in n_agents_list]
-p_list = [[] for i in n_agents_list]
+y_agg_list = [[] for _ in n_agents_list]
+s_agg_list = [[] for _ in n_agents_list]
+c_agg_list = [[] for _ in n_agents_list]
+k_agg_list = [[] for _ in n_agents_list]
+k_max_list = [[] for _ in n_agents_list]
+k_min_list = [[] for _ in n_agents_list]
+s_max_list = [[] for _ in n_agents_list]
+s_min_list = [[] for _ in n_agents_list]
+shock_agg_list = [[] for _ in n_agents_list]
+p_list = [[] for _ in n_agents_list]
 
 for ind, n_hh in enumerate([1, 2, 3]):
     # replicate environment
@@ -463,10 +460,9 @@ for ind, n_hh in enumerate([1, 2, 3]):
     def compute_action(obs, policy_list: list, max_action: float):
         K = obs[0]
         shock_raw = [obs[2]] + list(obs[1])
-        shock_id = encode(shock_raw, dims=[2 for i in range(env.n_hh + 1)])
+        shock_id = encode(shock_raw, dims=[2 for _ in range(env.n_hh + 1)])
         s = [policy_list[i](np.array([shock_id] + K)) for i in range(env.n_hh)]
-        action = np.array([2 * s[i] / max_action - 1 for i in range(env.n_hh)])
-        return action
+        return np.array([2 * s[i] / max_action - 1 for i in range(env.n_hh)])
 
     """ Step 4.2: Simulate an episode (MAX_steps timesteps) """
     shock_idtc_list = [[] for i in range(env.n_hh)]

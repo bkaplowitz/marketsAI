@@ -56,7 +56,7 @@ checkpoint_path = checkpoints_dirs[0]
 """ Step 1: Plot progress """
 
 
-if PLOT_PROGRESS == True:
+if PLOT_PROGRESS:
     for i in range(len(exp_names)):
         data_progress_df = pd.read_csv(progress_csv_dirs[i])
         max_rewards = data_progress_df[
@@ -75,23 +75,25 @@ if PLOT_PROGRESS == True:
     plt.ylabel("Discounted utility")
     plt.xlabel("Timesteps (thousands)")
     plt.legend(labels=[f"{i+1} households" for i in range(len(n_agents_list))])
-    learning_plot.savefig(OUTPUT_PATH_FIGURES + "progress_" + exp_names[-1] + ".png")
+    learning_plot.savefig(
+        f"{OUTPUT_PATH_FIGURES}progress_" + exp_names[-1] + ".png"
+    )
 
 
 """ Step 2: Congif and Restore RL policy and  then simulate """
-y_agg_list = [[] for i in n_agents_list]
-s_agg_list = [[] for i in n_agents_list]
-c_agg_list = [[] for i in n_agents_list]
-k_agg_list = [[] for i in n_agents_list]
-shock_agg_list = [[] for i in n_agents_list]
+y_agg_list = [[] for _ in n_agents_list]
+s_agg_list = [[] for _ in n_agents_list]
+c_agg_list = [[] for _ in n_agents_list]
+k_agg_list = [[] for _ in n_agents_list]
+shock_agg_list = [[] for _ in n_agents_list]
+env_label = "capital_planner_ma"
+env_horizon = 1000
+n_capital = 1
+beta = 0.98
 for ind, n_hh in enumerate(n_agents_list):
     """Step 2.0: replicate original environemnt and config"""
-    env_label = "capital_planner_ma"
     register_env(env_label, Capital_planner_ma)
-    env_horizon = 1000
     n_hh = n_hh
-    n_capital = 1
-    beta = 0.98
     env_config_analysis = {
         "horizon": 1000,
         "n_hh": n_hh,
@@ -139,22 +141,22 @@ for ind, n_hh in enumerate(n_agents_list):
     """ Step 2: Simulate an episode (MAX_steps timesteps) """
 
     env = Capital_planner_ma(env_config=env_config_analysis)
-    shock_idtc_list = [[] for i in range(env.n_hh)]
-    y_list = [[] for i in range(env.n_hh)]
-    s_list = [[] for i in range(env.n_hh)]
-    c_list = [[] for i in range(env.n_hh)]
-    k_list = [[] for i in range(env.n_hh)]
+    shock_idtc_list = [[] for _ in range(env.n_hh)]
+    y_list = [[] for _ in range(env.n_hh)]
+    s_list = [[] for _ in range(env.n_hh)]
+    c_list = [[] for _ in range(env.n_hh)]
+    k_list = [[] for _ in range(env.n_hh)]
     MAX_STEPS = env.horizon
 
     # loop
     obs = env.reset()
     for t in range(MAX_STEPS):
-        action = {}
-        for i in range(env.n_hh):
-            action[f"hh_{i}"] = trained_trainer.compute_action(
+        action = {
+            f"hh_{i}": trained_trainer.compute_action(
                 obs[f"hh_{i}"], policy_id="hh"
             )
-
+            for i in range(env.n_hh)
+        }
         obs, rew, done, info = env.step(action)
         for i in range(env.n_hh):
             shock_idtc_list[i].append(obs["hh_0"][1][i])
@@ -200,13 +202,13 @@ for ind, n_hh in enumerate(n_agents_list):
     plt.title("Capital")
 
     plt.pyplot.tight_layout()
-    plt.savefig(OUTPUT_PATH_FIGURES + "SimInd_" + exp_names[ind] + ".png")
+    plt.savefig(f"{OUTPUT_PATH_FIGURES}SimInd_" + exp_names[ind] + ".png")
     plt.clf
     plt.show()
 
 """ Step 3: Create aggregate plots"""
 
-x = [i for i in range(100)]
+x = list(range(100))
 plt.subplot(2, 2, 1)
 for i in range(len(n_agents_list)):
     sn.lineplot(x, shock_agg_list[i][:100], label=f"{i} household(s)", legend=0)
@@ -230,13 +232,13 @@ plt.title("Aggregate Capital")
 plt.tight_layout()
 handles, labels = plt.gca().get_legend_handles_labels()
 plt.legend(handles, labels, loc="lower right", prop={"size": 6})
-plt.savefig(OUTPUT_PATH_FIGURES + "SimAgg_" + exp_names[-1] + ".png")
+plt.savefig(f"{OUTPUT_PATH_FIGURES}SimAgg_" + exp_names[-1] + ".png")
 plt.clf
 plt.show()
 
 """ Create CSV with simulation results """
 
-if SAVE_CSV == True:
+if SAVE_CSV:
 
     IRResults_agg = {"k_agg": k_agg_list, "shock_agg": shock_agg_list}
     IRResults_idtc = {}
@@ -247,11 +249,11 @@ if SAVE_CSV == True:
         IRResults_idtc[f"y_{i}"] = y_list[i]
         IRResults_idtc[f"c_{i}"] = c_list[i]
 
-    IRResults = {**IRResults_agg, **IRResults_idtc}
+    IRResults = IRResults_agg | IRResults_idtc
     df_IR = pd.DataFrame(IRResults)
 
     # when ready for publication
-    if FOR_PUBLIC == True:
+    if FOR_PUBLIC:
         df_IR.to_csv(
             "/home/mc5851/marketsAI/marketsai/Documents/Figures/capital_planner_IR_July20_2hh.csv"
         )

@@ -102,13 +102,9 @@ class KrusellSmith(MultiAgentEnv):
                     if (t // (1 / self.shock_agg_transition[0][1]) + 1) % 2 == 0
                     else 0
                 )
-            self.shocks_analysis_idtc = {0: [0 for i in range(self.n_hh)]}
+            self.shocks_analysis_idtc = {0: [0 for _ in range(self.n_hh)]}
             for t in range(1, self.horizon + 1):
-                self.shocks_analysis_idtc[t] = (
-                    [0 for i in range(self.n_hh)]
-                    if (t // (1 / self.shock_idtc_transition[0][1]) + 1) % 2 == 0
-                    else [0 for i in range(self.n_hh)]
-                )
+                self.shocks_analysis_idtc[t] = [0 for _ in range(self.n_hh)]
 
         # CREATE SPACES
 
@@ -132,7 +128,7 @@ class KrusellSmith(MultiAgentEnv):
                     MultiDiscrete(
                         [
                             len(self.shock_idtc_values)
-                            for i in range(self.n_obs_shock_idtc)
+                            for _ in range(self.n_obs_shock_idtc)
                         ]
                     ),
                     Discrete(len(self.shock_agg_values)),
@@ -213,7 +209,7 @@ class KrusellSmith(MultiAgentEnv):
         }
         return self.obs_
 
-    def step(self, action_dict):  # INPUT: Action Dictionary
+    def step(self, action_dict):    # INPUT: Action Dictionary
         """
         STEP FUNCTION
         0. update recursive structure (e.g. k=k_next)
@@ -295,8 +291,8 @@ class KrusellSmith(MultiAgentEnv):
             )[0]
 
         # reorganize state so each hh sees his state first
-        k_new_perhh = [[] for i in range(self.n_hh)]
-        shocks_idtc_id_new_perhh = [[] for i in range(self.n_hh)]
+        k_new_perhh = [[] for _ in range(self.n_hh)]
+        shocks_idtc_id_new_perhh = [[] for _ in range(self.n_hh)]
         # put your own state first
 
         for i in range(self.n_hh):
@@ -358,7 +354,7 @@ class KrusellSmith(MultiAgentEnv):
                 for i in range(1, self.n_hh)
             }
 
-            info = {**info_global, **info_ind}
+            info = info_global | info_ind
 
         # RETURN
 
@@ -417,7 +413,7 @@ def main():
             "max_passthrough": [],
         }
 
-        for i, n_hh in enumerate([i + 1 for i in range(5)]):
+        for i, n_hh in enumerate(i + 1 for i in range(5)):
             env_config["n_inda"] = n_hh
             time_preinit = time.time()
             env = KrusellSmith(env_config=env_config)
@@ -454,9 +450,9 @@ def main():
         env_config_analysis = env_config.copy()
         env_config_analysis["analysis_mode"] = True
         env = KrusellSmith(env_config=env_config_analysis)
-        k_list = [[] for i in range(env.n_hh)]
-        rew_list = [[] for i in range(env.n_hh)]
-        shock_ind_list = [[] for i in range(env.n_hh)]
+        k_list = [[] for _ in range(env.n_hh)]
+        rew_list = [[] for _ in range(env.n_hh)]
+        shock_ind_list = [[] for _ in range(env.n_hh)]
         R_list = []
         shock_agg_list = []
 
@@ -501,9 +497,9 @@ def main():
         env_config_eval["eval_mode"] = True
         env_config_eval["simul_mode"] = True
         env = KrusellSmith(env_config=env_config_eval)
-        k_list = [[] for i in range(env.n_hh)]
-        rew_list = [[] for i in range(env.n_hh)]
-        shock_ind_list = [[] for i in range(env.n_hh)]
+        k_list = [[] for _ in range(env.n_hh)]
+        rew_list = [[] for _ in range(env.n_hh)]
+        shock_ind_list = [[] for _ in range(env.n_hh)]
         R_list = []
         shock_agg_list = []
 
